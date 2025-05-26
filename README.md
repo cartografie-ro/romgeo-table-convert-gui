@@ -1,7 +1,7 @@
 ## ROMGEO Table Convert GUI
 ![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)
 
-[🇬🇧 English](README.md) | [🇷🇴 Română](README.RO.md)
+[🇬🇧 English](README.md) | [🇷🇴 Română](README_RO.md)
 
 **ROMGEO Table Convert GUI** is a Windows desktop application designed to help surveyors, engineers, and GIS professionals convert geospatial point data with ease. The application features a user-friendly graphical interface for importing, viewing and exporting coordinate tables.
 
