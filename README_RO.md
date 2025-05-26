@@ -2,7 +2,7 @@
 
 ![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)
 
-[🇬🇧 English](README.md) | [🇷🇴 Română](README.RO.md)
+[🇬🇧 English](README.md) | [🇷🇴 Română](README_RO.md)
 
 **ROMGEO Table Convert GUI** este o aplicație desktop pentru Windows, concepută pentru a ajuta topografii, inginerii și profesioniștii GIS să convertească cu ușurință datele de puncte geospațiale. Aplicația oferă o interfață grafică prietenoasă pentru importul, vizualizarea și exportul tabelelor de coordonate.
 
