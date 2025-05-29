@@ -15,6 +15,10 @@
 
 Acest depozit oferă momentan doar fișierul EXE compilat, pentru distribuire și utilizare facilă. Codul sursă va fi disponibil într-o actualizare viitoare.
 
+### Descarcare
+Puteți descărca versiunea executabila compilată pentru Windows 64-bit de la 
+[romgeo.ro/downloads](https://romgeo.ro/downloads)
+
 ### Sume de control
 ```
   File: romgeo-table-convert-gui-v1.0.0.45.exe
