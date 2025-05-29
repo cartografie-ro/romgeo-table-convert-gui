@@ -14,6 +14,10 @@
 
 This repository currently provides only the compiled EXE file for easy distribution and use. The source code will be made available in a future update.
 
+### Download Sections
+You can download the precompiled exe version for windows 64-bit from 
+[romgeo.ro/downloads](https://romgeo.ro/downloads)
+
 ### Checksums
 ```
   File: romgeo-table-convert-gui-v1.0.0.45.exe
