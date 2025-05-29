@@ -13,3 +13,12 @@
 - **Simple Workflow:** Designed for quick and efficient data processing without the need for complex GIS software.
 
 This repository currently provides only the compiled EXE file for easy distribution and use. The source code will be made available in a future update.
+
+### Checksums
+```
+  File: romgeo-table-convert-gui-v1.0.0.45.exe
+CRC-32: 00def2ad
+   MD4: 5e89b4b4beb544d6250f032578acbd20
+   MD5: 38f1cef6c1ff243da213f01996a6d8f5
+ SHA-1: b94abfbac3a176342bc39a45a0db9f71f3f4ce49
+```
