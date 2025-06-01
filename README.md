@@ -16,7 +16,7 @@ This repository currently provides only the compiled EXE file for easy distribut
 
 ### Download Sections
 You can download the precompiled exe version for windows 64-bit from 
-[romgeo.ro/downloads](https://romgeo.ro/downloads)
+[romgeo.ro](https://romgeo.ro/sdm_categories/romgeo/)
 
 ### Checksums
 ```
