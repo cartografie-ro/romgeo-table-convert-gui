@@ -17,7 +17,7 @@ Acest depozit oferă momentan doar fișierul EXE compilat, pentru distribuire ș
 
 ### Descarcare
 Puteți descărca versiunea executabila compilată pentru Windows 64-bit de la 
-[romgeo.ro/downloads](https://romgeo.ro/downloads)
+[romgeo.ro](https://romgeo.ro/sdm_categories/romgeo/)
 
 ### Sume de control
 ```
