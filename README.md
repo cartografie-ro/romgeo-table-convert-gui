@@ -14,7 +14,9 @@
 
 This repository currently provides only the compiled EXE file for easy distribution and use. The source code will be made available in a future update.
 
-### Download Sections
+---
+
+## Download Sections
 You can download the precompiled exe version for windows 64-bit from 
 [romgeo.ro](https://romgeo.ro/sdm_categories/romgeo/)
 
@@ -26,3 +28,13 @@ CRC-32: 00def2ad
    MD5: 38f1cef6c1ff243da213f01996a6d8f5
  SHA-1: b94abfbac3a176342bc39a45a0db9f71f3f4ce49
 ```
+---
+## Online ETRS → Stereo70 Conversion
+
+For immediate coordinate transformation between **ETRS** and **Stereo70** systems, use the official **ROMGEO web converter and API**:
+
+- **Web Demo:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html)
+- **API Documentation:** [API Reference](https://api.romgeo.ro/api/v1/docs#)
+- **API Source Code:** [cartografie-ro/romgeo-api on GitHub](https://github.com/cartografie-ro/romgeo-api)
+
+No installation or signup required. The web interface and API provide the same transformation engine as the desktop application—ideal for quick conversions or automated workflows.
