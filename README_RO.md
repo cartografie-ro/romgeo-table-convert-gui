@@ -15,7 +15,9 @@
 
 Acest depozit oferă momentan doar fișierul EXE compilat, pentru distribuire și utilizare facilă. Codul sursă va fi disponibil într-o actualizare viitoare.
 
-### Descarcare
+---
+
+## Descarcare
 Puteți descărca versiunea executabila compilată pentru Windows 64-bit de la 
 [romgeo.ro](https://romgeo.ro/sdm_categories/romgeo/)
 
@@ -27,3 +29,15 @@ CRC-32: 00def2ad
    MD5: 38f1cef6c1ff243da213f01996a6d8f5
  SHA-1: b94abfbac3a176342bc39a45a0db9f71f3f4ce49
 ```
+
+---
+
+## Conversie online ETRS → Stereo70
+
+Pentru conversia imediată a coordonatelor între sistemele **ETRS** și **Stereo70**, folosiți convertorul web oficial **ROMGEO** și API-ul aferent:
+
+- **Demo web:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html)
+- **Documentație API:** [API Reference](https://api.romgeo.ro/api/v1/docs#)
+- **Cod sursă API:** [cartografie-ro/romgeo-api pe GitHub](https://github.com/cartografie-ro/romgeo-api)
+
+Nu este necesară instalarea sau crearea unui cont. Interfața web și API-ul utilizează același motor de conversie ca aplicația desktop — ideale pentru conversii rapide sau fluxuri de lucru automatizate.
