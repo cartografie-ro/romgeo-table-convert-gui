@@ -33,7 +33,7 @@ CRC-32: 00def2ad
 
 For immediate coordinate transformation between **ETRS** and **Stereo70** systems, use the official **ROMGEO web converter and API**:
 
-- **Web Demo:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html)
+- **Web Demo:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html#en)
 - **API Documentation:** [API Reference](https://api.romgeo.ro/api/v1/docs#)
 - **API Source Code:** [cartografie-ro/romgeo-api on GitHub](https://github.com/cartografie-ro/romgeo-api)
 
