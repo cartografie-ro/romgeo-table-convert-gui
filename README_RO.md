@@ -36,7 +36,7 @@ CRC-32: 00def2ad
 
 Pentru conversia imediată a coordonatelor între sistemele **ETRS** și **Stereo70**, folosiți convertorul web oficial **ROMGEO** și API-ul aferent:
 
-- **Demo web:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html)
+- **Demo web:** [ROMGEO Coordinate Transformation Demo](https://api.romgeo.ro/api/v1/demo.html#ro)
 - **Documentație API:** [API Reference](https://api.romgeo.ro/api/v1/docs#)
 - **Cod sursă API:** [cartografie-ro/romgeo-api pe GitHub](https://github.com/cartografie-ro/romgeo-api)
 
