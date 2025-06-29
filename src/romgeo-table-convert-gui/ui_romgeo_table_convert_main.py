@@ -505,9 +505,9 @@ class Ui_MainWindow(object):
         self.comboBox_dms.setItemText(0, _translate("MainWindow", "DMS"))
         self.comboBox_dms.setItemText(1, _translate("MainWindow", "DD"))
         self.label.setText(_translate("MainWindow", "Separator Export:"))
-        self.comboBox_separator.setItemText(2, _translate("MainWindow", "Virgula"))
-        self.comboBox_separator.setItemText(0, _translate("MainWindow", "Spatiu"))
+        self.comboBox_separator.setItemText(0, _translate("MainWindow", "Virgula"))
         self.comboBox_separator.setItemText(1, _translate("MainWindow", "Tab"))
+        self.comboBox_separator.setItemText(2, _translate("MainWindow", "Spatiu"))
         self.label_st70.setText(_translate("MainWindow", "STEREO70 (EPSG:3844)"))
         self.toolButton_st70_import.setToolTip(_translate("MainWindow", "<b><span style=\"color:#0066cc;\">Importă fișier Stereo70</span></b><br>\n"
 "Încarcă coordonatele în sistemul Stereo70 în aplicație.<br>\n"
