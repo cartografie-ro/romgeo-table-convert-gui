@@ -1,0 +1,10 @@
+/.archive
+/.old
+/.vscode
+/build
+/design
+/dist
+/test_data
+/venv_t1
+**/__pycache__/
+*.spg
