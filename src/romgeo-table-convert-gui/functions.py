@@ -1,12 +1,14 @@
 import romgeo_lite as romgeo
 import numpy as np
 import re
+from functools import lru_cache
 
 import config
 from logutil import log_function
 
 import grid_mgmt
 
+@lru_cache()
 def _fmt(val: float, width: int, precision: str) -> str:
     """Formats a floating-point number to a specified width and precision.
     
@@ -21,6 +23,7 @@ def _fmt(val: float, width: int, precision: str) -> str:
     """
     return format(val, f"{width}{precision}") if not np.isnan(val) else "NaN".rjust(width)
 
+@lru_cache()
 def _dd2dms(dd:float, format:str="tuple"):
     """Converts Decimal degrees to DD*MM'SS.ss", or to tuple (d,m,s) format
 
@@ -42,6 +45,7 @@ def _dd2dms(dd:float, format:str="tuple"):
     else:
         return f"{int(d):02d}\N{DEGREE SIGN}{int(m):02d}\N{Apostrophe}{int(s * 1e5) / 1e5:08.5f}\N{Quotation mark}"
 
+@lru_cache()
 def _parse_line_etrs(x) -> tuple[float, float, float, str, list[str]]:
     """Converts parameter to decimal dgrees.
         Also flips Lat/lon if needed
@@ -93,6 +97,7 @@ def _parse_line_etrs(x) -> tuple[float, float, float, str, list[str]]:
 
     return lat, lon, he, pointName, comment
 
+@lru_cache()
 def _split_floats_from_text(line: str) -> tuple[float, float, float, str]:
     """
     Extracts a name (optional) followed by exactly three floats from a line using named regex groups.
@@ -107,14 +112,16 @@ def _split_floats_from_text(line: str) -> tuple[float, float, float, str]:
         Tuple[float, float, float, str]: Parsed values.
     """
     # Match pattern: optional name + 3 floats (with flexible separators)
-    pattern = re.compile(
-        r"""^(?P<name>.*?)
-            [,\s\t]*  (?P<val1>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
-            [,\s\t]+  (?P<val2>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
-            [,\s\t]+  (?P<val3>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
-            [,\s\t]*$""",
-        re.VERBOSE
-    )
+    # pattern = re.compile(
+    #     r"""^(?P<name>.*?)
+    #         [,\s\t]*  (?P<val1>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
+    #         [,\s\t]+  (?P<val2>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
+    #         [,\s\t]+  (?P<val3>[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)
+    #         [,\s\t]*$""",
+    #     re.VERBOSE
+    # )
+
+    pattern = re.compile(config.PREGEX_FLOAT4, re.VERBOSE)
 
     match = pattern.match(line.strip())
     if not match:
@@ -129,26 +136,7 @@ def _split_floats_from_text(line: str) -> tuple[float, float, float, str]:
     except Exception:
         return np.nan, np.nan, np.nan, ""
 
-def _is_inside_bounds(a:float, b:float, type:str = "etrs")->bool:
-    """Determines if the given coordinates are within specified bounds.
-    
-    Args:
-        a (float): The x-coordinate to check.
-        b (float): The y-coordinate to check.
-        type (str, optional): The type of coordinate system to use for bounds. 
-            Defaults to "etrs". Can be "etrs" or "st70".
-    
-    Returns:
-        bool: True if the coordinates (a, b) are within the defined bounds, 
-        False otherwise.
-    """
-    if type == "etrs":
-        BBOX = config.BBOX_RO_ETRS
-    elif type == "st70":
-        BBOX = config.BBOX_RO_ST70
-    
-    return (BBOX[1] <= a <= BBOX[3]) and (BBOX[0] <= b <= BBOX[2])
-
+@lru_cache()
 def _val_to_float(x):
     """Converts parameter to decimal dgrees
 
@@ -166,6 +154,7 @@ def _val_to_float(x):
     except:
         return np.nan
 
+@lru_cache()
 def _dd_or_dms(x):
     """Converts a given input into a decimal degree (DD) or degrees, minutes, seconds (DMS) format.
     
@@ -188,6 +177,7 @@ def _dd_or_dms(x):
             return np.nan
             #raise Exception("Bad Value") 
 
+@lru_cache()
 def _islat(v) -> bool:
     """Determines if a given value is a valid latitude.
     
@@ -208,6 +198,7 @@ def _islat(v) -> bool:
     else:
         return False
 
+@lru_cache()
 def _islon(v) -> bool:
     """Determines if a given value is a valid longitude within a specified bounding box.
     
@@ -224,6 +215,7 @@ def _islon(v) -> bool:
     else:
         return False
 
+@lru_cache()
 def _latlon_maybe_flipped(lat: float, lon: float) -> bool:
     """Determines if the latitude and longitude values may be flipped.
     
@@ -276,9 +268,124 @@ def _is_ascii_file(filepath: str, max_bytes: int = 4096) -> bool:
 
 
 
+def _dd_to_dms_vec(dd_array: np.ndarray, safe:bool=False) -> np.ndarray:
+    """
+    Vectorized conversion from decimal degrees to DMS string (DD°MM′SS.SSSSS″).
+
+    Args:
+        dd_array (np.ndarray): Array of decimal degree floats.
+
+    Returns:
+        np.ndarray of strings in DMS format.
+    """
+    dd = np.abs(dd_array)
+    total_seconds = dd * 3600
+    minutes_total, seconds = divmod(total_seconds, 60)
+    degrees, minutes = divmod(minutes_total, 60)
+
+    d_int = degrees.astype(int)
+    m_int = minutes.astype(int)
+    s_float = np.round(seconds, 6)
+
+    # Split seconds into int and decimal string
+    s_int = s_float.astype(int)
+    s_decimals = s_float - s_int
+    s_int_str = np.char.zfill(s_int.astype(str), 2)
+    s_decimal_str = np.char.mod('%.6f', s_decimals).astype(str)
+    s_decimal_str = np.char.lstrip(s_decimal_str, '0')  # keep .xxxxxx part
+
+    # Recombine to SS.SSSSSS with padded integer part
+    s_str = np.char.add(s_int_str, s_decimal_str)
+
+    # Zero-padded degrees and minutes
+    d_str = np.char.zfill(d_int.astype(str), 2)
+    m_str = np.char.zfill(m_int.astype(str), 2)
+
+    # Final DMS string
+    if safe:
+        dms = np.char.add(d_str, '°')
+        dms = np.char.add(dms, m_str)
+        dms = np.char.add(dms, "'")
+        dms = np.char.add(dms, s_str)
+        dms = np.char.add(dms, '"')       
+    else:
+        dms = np.char.add(d_str, '°')
+        dms = np.char.add(dms, m_str)
+        dms = np.char.add(dms, '′')
+        dms = np.char.add(dms, s_str)
+        dms = np.char.add(dms, '″')
+
+    return dms
+
+def _is_inside_bounds(a:float, b:float, type:str = "etrs")->bool:
+    """Determines if the given coordinates are within specified bounds.
+    
+    Args:
+        a (float): The x-coordinate to check.
+        b (float): The y-coordinate to check.
+        type (str, optional): The type of coordinate system to use for bounds. 
+            Defaults to "etrs". Can be "etrs" or "st70".
+    
+    Returns:
+        bool: True if the coordinates (a, b) are within the defined bounds, 
+        False otherwise.
+    """
+    if type == "etrs":
+        BBOX = config.BBOX_RO_ETRS
+    elif type == "st70":
+        BBOX = config.BBOX_RO_ST70
+    
+    return (BBOX[1] <= a <= BBOX[3]) and (BBOX[0] <= b <= BBOX[2])
+
+def _filter_inside_bounds(df, type: str = "st70", x_col: str = "st70_X", y_col: str = "st70_Y", z_col: str = "H_mn"):
+    """
+    Efficiently filters a DataFrame based on coordinate bounds.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        type (str): Coordinate system type: "st70" or "etrs".
+        x_col (str): X/Longitude column name. Defaults to "st70_X".
+        y_col (str): Y/Latitude column name. Defaults to "st70_Y".
+        z_col (str): Height column name. Defaults to "H_mn".
+
+    Returns:
+        pd.DataFrame: Filtered DataFrame.
+    """
+    if type.upper() == "ST70":
+        bbox = config.BBOX_RO_ST70
+        zbox = config.ZBOX_RO_ST70
+    elif type.upper() == "ETRS":
+        bbox = config.BBOX_RO_ETRS
+        zbox = config.ZBOX_RO_ETRS
+        if x_col == "st70_X": x_col = "Longitude"
+        if y_col == "st70_Y": y_col = "Latitude"
+        if z_col == "H_mn": z_col = "Height_Ellipsoidal"
+    else:
+        raise ValueError(f"Unsupported type: {type}")
+
+    mask = (
+        (df[x_col] >= bbox[1]) & (df[x_col] <= bbox[3]) &
+        (df[y_col] >= bbox[0]) & (df[y_col] <= bbox[2]) &
+        (df[z_col]  >= zbox[0]) & (df[z_col]  <= zbox[1])
+    )
+    return df[mask]
+
+def _round_columns(df, columns, decimals=3):
+    df[columns] = df[columns].round(decimals)
+    return df
+
+def _fill_missing_names(df, name_col="Name", prefix="Point "):
+    missing = df[name_col].isna()
+    df.loc[missing, name_col] = prefix + (df.index[missing] + 1).astype(str)
+    return df
+
+
+
+
+
 
 @log_function(level='debug')
-def convert_etrs_st70(multiText: list[str]) -> list[tuple[str, float, float, float, float, float, float]]:
+def convert_etrs_st70(multiText: list[str], GRID = None) -> list[tuple[str, float, float, float, float, float, float]]:
     """Converts coordinates from ETRS89 to the ST70 system.
     
     Args:
@@ -297,8 +404,12 @@ def convert_etrs_st70(multiText: list[str]) -> list[tuple[str, float, float, flo
     If the input coordinates cannot be parsed or converted, NaN values will be returned for those fields.
     """
     results = []
+
     # Preallocate transformer
-    t = romgeo.transformations.Transform(grid_mgmt.ROMGEO_GRID_FILE)
+    if GRID is None:
+        GRID = grid_mgmt.ROMGEO_GRID_FILE
+
+    t = romgeo.transformations.Transform(GRID)
 
     for line in multiText:
         name = ""
@@ -330,8 +441,10 @@ def convert_etrs_st70(multiText: list[str]) -> list[tuple[str, float, float, flo
 
     return results
 
+
+
 @log_function(level='debug')
-def convert_st70_etrs89(multiText: list[str]) -> list[tuple[str, float, float, float, float, float, float]]:
+def convert_st70_etrs89(multiText: list[str], GRID = None) -> list[tuple[str, float, float, float, float, float, float]]:
     """Converts coordinates from ST70 to ETRS89 for a list of input strings.
     
     Args:
@@ -347,7 +460,12 @@ def convert_st70_etrs89(multiText: list[str]) -> list[tuple[str, float, float, f
         longitude, and height will be NaN.
     """
     results = []
-    t = romgeo.transformations.Transform(grid_mgmt.ROMGEO_GRID_FILE)
+
+    # Preallocate transformer
+    if GRID is None:
+        GRID = grid_mgmt.ROMGEO_GRID_FILE
+
+    t = romgeo.transformations.Transform(GRID)
 
     for line in multiText:
         e, n, h, name = _split_floats_from_text(line)
@@ -376,9 +494,112 @@ def convert_st70_etrs89(multiText: list[str]) -> list[tuple[str, float, float, f
 
 
 
+@log_function(level='debug')
+def batch_etrs_to_st70(multiText: list[str]) -> list[tuple[str, float, float, float, float, float, float]]:
+    """
+    Parses a list of ETRS89 coordinate lines, converts them in batch to ST70 using t.etrs_to_st70,
+    and returns a list of tuples (name, n, e, h, st_x, st_y, st_h).
+
+    Args:
+        multiText (list[str]): List of strings, each containing coordinates in ETRS89 format.
+
+    Returns:
+        list[tuple[str, float, float, float, float, float, float]]: Each tuple contains:
+            - name (str)
+            - n (float): ETRS89 latitude
+            - e (float): ETRS89 longitude
+            - h (float): ETRS89 height
+            - st_x (float): ST70 X
+            - st_y (float): ST70 Y
+            - st_h (float): ST70 height
+    """
+    t = romgeo.transformations.Transform(grid_mgmt.ROMGEO_GRID_FILE)
+
+    n_arr, e_arr, h_arr, name_list = map(np.array, zip(*(_parse_line_etrs(line)[:4] for line in multiText)))
+    st_x_arr = np.full_like(n_arr, np.nan)
+    st_y_arr = np.full_like(e_arr, np.nan)
+    st_h_arr = np.full_like(h_arr, np.nan)
+
+    # Only convert if at least one valid row
+    mask = ~np.isnan(n_arr) & ~np.isnan(e_arr) & ~np.isnan(h_arr)
+    if np.any(mask):
+        try:
+            # Note: etrs_to_st70 expects (north, east, height, out_y, out_x, out_h)
+            # Output arrays must be passed as contiguous arrays, not masked views!
+            # So, create compact arrays for valid rows, then assign back.
+            n_valid = n_arr[mask]
+            e_valid = e_arr[mask]
+            h_valid = h_arr[mask]
+            st_y_valid = np.zeros_like(n_valid)
+            st_x_valid = np.zeros_like(e_valid)
+            st_h_valid = np.zeros_like(h_valid)
+
+            t.etrs_to_st70(n_valid, e_valid, h_valid, st_y_valid, st_x_valid, st_h_valid)
+
+            st_x_arr[mask] = st_x_valid
+            st_y_arr[mask] = st_y_valid
+            st_h_arr[mask] = st_h_valid
+        except Exception:
+            pass  # leave as NaN if conversion fails
+
+    results = [
+        (name_list[i], n_arr[i], e_arr[i], h_arr[i], st_x_arr[i], st_y_arr[i], st_h_arr[i])
+        for i in range(len(multiText))
+    ]
+    return results
 
 
+@log_function(level='debug')
+def bulk_st70_etrs89(multiText: list[str]) -> list[tuple[str, float, float, float, float, float, float]]:
+    """
+    Parses a list of ST70 coordinate lines, converts them in batch to ETRS89 using t.st70_to_etrs,
+    and returns a list of tuples (name, e, n, h, lat, lon, z).
 
+    Args:
+        multiText (list[str]): List of strings, each containing coordinates in ST70 format.
+
+    Returns:
+        list[tuple[str, float, float, float, float, float, float]]: Each tuple contains:
+            - name (str)
+            - e (float): ST70 easting
+            - n (float): ST70 northing
+            - h (float): ST70 height
+            - lat (float): ETRS89 latitude
+            - lon (float): ETRS89 longitude
+            - z (float): ETRS89 height
+    """
+    t = romgeo.transformations.Transform(grid_mgmt.ROMGEO_GRID_FILE)
+
+    # Parse all lines into arrays
+    e_arr, n_arr, h_arr, name_list = map(np.array, zip(*(_split_floats_from_text(line) for line in multiText)))
+    lat_arr = np.full_like(e_arr, np.nan)
+    lon_arr = np.full_like(n_arr, np.nan)
+    z_arr   = np.full_like(h_arr, np.nan)
+
+    # Only convert if at least one valid row
+    mask = ~np.isnan(e_arr) & ~np.isnan(n_arr) & ~np.isnan(h_arr)
+    if np.any(mask):
+        try:
+            e_valid = e_arr[mask]
+            n_valid = n_arr[mask]
+            h_valid = h_arr[mask]
+            lat_valid = np.zeros_like(e_valid)
+            lon_valid = np.zeros_like(n_valid)
+            z_valid   = np.zeros_like(h_valid)
+
+            t.st70_to_etrs(n_valid, e_valid, h_valid, lat_valid, lon_valid, z_valid)
+
+            lat_arr[mask] = lat_valid
+            lon_arr[mask] = lon_valid
+            z_arr[mask]   = z_valid
+        except Exception:
+            pass  # leave as NaN if conversion fails
+
+    results = [
+        (name_list[i], e_arr[i], n_arr[i], h_arr[i], lat_arr[i], lon_arr[i], z_arr[i])
+        for i in range(len(multiText))
+    ]
+    return results
 
 def test_1():
     import numpy
@@ -394,8 +615,8 @@ def test_1():
     ]
 
     print("Test 1")
-    print (convert_etrs_st70(TEST_MULTILIST))
-    print("=" * 10)
+    print (batch_etrs_to_st70(TEST_MULTILIST))
+    print("=" * 80)
 def test_2():
     import numpy
     TEST_MULTILIST = [
@@ -409,8 +630,8 @@ def test_2():
     ]
 
     print("Test 2")
-    print (convert_st70_etrs89(TEST_MULTILIST))
-    print("=" * 10)
+    print (batch_etrs_to_st70(TEST_MULTILIST))
+    print("=" * 80)
 def test_3():
     import numpy
     TEST_MULTILIST = [
@@ -419,14 +640,16 @@ def test_3():
     ]
 
     print("Test 3")
-    print (convert_etrs_st70(TEST_MULTILIST))
-    print("=" * 10)
+    print (batch_etrs_to_st70(TEST_MULTILIST))
+    print("=" * 80)
 
 if __name__ == "__main__":
 
-    _,_ = grid_mgmt.select_best_grid()
-    test_1()    
-    test_2()
-    test_3()
+    # _,_ = grid_mgmt.select_best_grid()
+    # test_1()    
+    # test_2()
+    # test_3()
     #grid_mgmt.ROMGEO_GRID_FILE = "C:/Users/mihail.cretu/AppData/Local/romgeo/grids/rom_grid3d_408_api.spg"
     #print(convert_etrs_st70(["SULI	45°09'26.39240 N	29°40'20.24480 E	32.915"]))
+
+    print(_dd_to_dms_vec(np.array([43.6209889,2.0524683, -8.0524683])))

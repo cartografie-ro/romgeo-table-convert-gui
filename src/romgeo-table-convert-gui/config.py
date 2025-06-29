@@ -6,14 +6,19 @@ DEF_MULTILIST = ["DEMO1 44°34\'31.54821\" 22°39\'02.48758\" 198.848",
                  "DEMO2 N44g34m31.54821s 22 39 02.48758 E 198.848",
                  "DEMO3 44.84821 22.48758 198.848m"]
 
+# PREGEX_FLOAT4 = r"^(?:(?P<name>[\w\s]*)[^\d.]+)?(?P<val1>[1-9]\d{5}(?:\.\d+)?)[^\d.]+(?P<val2>[1-8]\d{5}(?:\.\d+)?)[^\d.]+(?P<val3>0(?:\.\d+)?|[1-9](?:\.\d+)?|[1-9]\d(?:\.\d+)?|[1-9]\d{2}(?:\.\d+)?|1\d{3}(?:\.\d+)?|2[0-5]\d{2}(?:\.\d+)?|2600(?:\.0+)?)$"
+
+
+PREGEX_FLOAT4 = r"^(?:(?P<name>[\w\s]*)[^\d.-]+)?(?P<val1>[1-9]\d{5}(?:\.\d+)?)[^\d.-]+(?P<val2>[1-8]\d{5}(?:\.\d+)?)[^\d.-]+(?P<val3>-?\d+(?:\.\d+)?)$"
+
 
 PREGEX_DMS   = r"([NEne]?)(\d+)(\D+)(\d+)(\D+)([\d.]+)(\D)*"
 
 # PREGEX_DMS4  = r"((?P<name>([\w\-\_\s\S])*)(?P<s0>[\s,;\t]))*(?P<lat>(([NEne]?)(?P<lat_d>[4][345678]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[4][345678]\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lon>(([NEne]?)(?P<lon_d>[23][\d]+)(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>[23][\d]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>[\d.]+)"
 # PREGEX_DMS4_FLIPPED = r"((?P<name>([\w\-\_\s\S])*)(?P<s0>[\s,;\t]))*(?P<lat>(([NEne]?)(?P<lat_d>[23][\d]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[23][\d]\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lon>(([NEne]?)(?P<lon_d>[4][345678]+)(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>[4][345678]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>[\d.]+)"
 
-PREGEX_DMS4         = r"(?:(?P<name>(?![NnEe]\d|[4-5]\d)[^\d\t\r\n][^\t\r\n]*?)(?P<s0>[\s,])+)?(?P<lat>(([NEne]?)(?P<lat_d>[4][345678]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[4][345678]\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lon>(([NEne]?)(?P<lon_d>[23][\d]+)(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>[23][\d]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>[\d.]+)"
-PREGEX_DMS4_FLIPPED = r"(?:(?P<name>(?![NnEe]\d|[4-5]\d)[^\d\t\r\n][^\t\r\n]*?)(?P<s0>[\s,])+)?(?P<lon>(([NEne]?)(?P<lon_d>2[3-9]|3[0-6])(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>(2[3-9]|3[0-6])\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lat>(([NEne]?)(?P<lat_d>[4][345678]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[4][345678]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>[\d.]+)"
+PREGEX_DMS4         = r"(?:(?P<name>(?![NnEe]\d|[4-5]\d)[^\d\t\r\n][^\t\r\n]*?)(?P<s0>[\s,])+)?(?P<lat>(([NEne]?)(?P<lat_d>[4][345678]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[4][345678]\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lon>(([NEne]?)(?P<lon_d>[23][\d]+)(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>[23][\d]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>-?\d+(?:\.\d+)?)"
+PREGEX_DMS4_FLIPPED = r"(?:(?P<name>(?![NnEe]\d|[4-5]\d)[^\d\t\r\n][^\t\r\n]*?)(?P<s0>[\s,])+)?(?P<lon>(([NEne]?)(?P<lon_d>2[3-9]|3[0-6])(\D+)(?P<lon_m>\d+)(\D+)(?P<lon_s>[\d]{1,2}([.][\d]+)*)|(?P<lon_dd>(2[3-9]|3[0-6])\.[\d]*))(\D)*)(?P<s1>[\s,;\t])(?P<lat>(([NEne]?)(?P<lat_d>[4][345678]+)(\D+)(?P<lat_m>\d+)(\D+)(?P<lat_s>[\d]{1,2}([.][\d]+)*)|(?P<lat_dd>[4][345678]\.[\d]*))(\D)*)(?P<s2>[\s,;\t])(?P<height>-?\d+(?:\.\d+)?)"
 
 # name in test (?P<name>(?![NnEe]\d|\d{2}[\s\d])[^ \t\r\n][^\t\r\n]*?)
 
@@ -85,7 +90,7 @@ VERT_CS["Black Sea 1975 Height",
     AXIS["Gravity-related Height",UP]]]"""
 
 SHP_PRJ_CONTENT="""PROJCS["Pulkovo_1942_Adj_58_Stereo_70",GEOGCS["GCS_Pulkovo_1942_Adj_1958",DATUM["D_Pulkovo_1942_Adj_1958",SPHEROID["Krasovsky_1940",6378245.0,298.3]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Double_Stereographic"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",500000.0],PARAMETER["Central_Meridian",25.0],PARAMETER["Scale_Factor",0.99975],PARAMETER["Latitude_Of_Origin",46.0],UNIT["Meter",1.0]],VERTCS["BlackSea_1975",VDATUM["BlackSea_1975"],PARAMETER["Vertical_Shift",0.0],PARAMETER["Direction",1.0],UNIT["Meter",1.0]]"""
-
+SHP_PRJ_CONTENT_ST70 = SHP_PRJ_CONTENT
 
 ETRS_INPUT_HELP="""
 <p>
@@ -224,17 +229,34 @@ EXPORT_POPUP_HELP_XLS_ST70 = EXPORT_POPUP_HELP
 
 TMP_ROOT = "/tmp/api-shapefiles"
 
-ZBOX_RO_ETRS = [-100, 2600]
-ZBOX_RO_ST70 = [ -50, 2600]
 
-BBOX_RO_ST70 = [116424.61, 215561.44, 1018946.51, 771863.53] 
-BBOX_RO_ETRS = [    20.26,     43.44,      31.41,     48.27]
+# ZBOX_RO_ETRS = [-100, 2600]
+# ZBOX_RO_ST70 = [ -50, 2600]
+# BBOX_RO_ST70 = [116424.61, 215561.44, 1018946.51, 771863.53] 
+# BBOX_RO_ETRS = [    20.26,     43.44,      31.41,     48.27]
+
+
+# Bounding boxes and Z ranges for Romania in Stereo70
+BBOX_RO_ST70 = [109783.04, 213634.564, 890783.04, 785634.564]
+ZBOX_RO_ST70 = [-100, 2600]
+
+# ETRS89 bounding box and Z range
+BBOX_RO_ETRS = [20.0639552, 43.5256905, 29.7972788, 48.3923523]
+ZBOX_RO_ETRS = [-100, 2600]
 
 HIDE_INFO_ETRS_EXPORT = False
 HIDE_INFO_ETRS_IMPORT = False
 
 HIDE_INFO_ST70_EXPORT = False
 HIDE_INFO_ST70_IMPORT = False
+
+
+HIDE_INFO_ETRS_EXPORT_DXF = False
+HIDE_INFO_ETRS_EXPORT_XLS = False
+HIDE_INFO_ETRS_EXPORT_SHP = False
+HIDE_INFO_ST70_EXPORT_DXF = False
+HIDE_INFO_ST70_EXPORT_XLS = False
+HIDE_INFO_ST70_EXPORT_SHP = False
 
 AUTO_UPDATE = True
 CHECK_PRERELEASE = True
@@ -246,6 +268,13 @@ URL_FAQ = "https://romgeo.ro/faq"
 URL_FEEDBACK = "https://romgeo.ro/feedback"
 
 LOGLEVEL = 'info'
+DEBUG_MAX_LIST = 10
 
 SWAP_XY_DXF = False
 SWAP_XY_SHP = True 
+SWAP_LATLON_SHP = False
+
+FMT_SPACE_SIZE = 15
+
+CHUNK_SIZE = 10_000
+MAX_POINTS_FOR_DXF = 100_000

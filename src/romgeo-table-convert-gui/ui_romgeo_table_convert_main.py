@@ -151,7 +151,7 @@ class Ui_MainWindow(object):
         self.toolButton_etrs_help.setObjectName("toolButton_etrs_help")
         self.horizontalLayout.addWidget(self.toolButton_etrs_help)
         self.verticalLayout_2.addWidget(self.frame_etrs_label)
-        self.textEdit_etrs = QtWidgets.QTextEdit(self.frame_etrs)
+        self.textEdit_etrs = QtWidgets.QPlainTextEdit(self.frame_etrs)
         self.textEdit_etrs.setEnabled(True)
         font = QtGui.QFont()
         font.setFamily("Courier")
@@ -159,8 +159,8 @@ class Ui_MainWindow(object):
         self.textEdit_etrs.setFont(font)
         self.textEdit_etrs.setDocumentTitle("")
         self.textEdit_etrs.setUndoRedoEnabled(True)
-        self.textEdit_etrs.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.textEdit_etrs.setAcceptRichText(False)
+        self.textEdit_etrs.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        # self.textEdit_etrs.setAcceptRichText(False)
         self.textEdit_etrs.setPlaceholderText("")
         self.textEdit_etrs.setObjectName("textEdit_etrs")
         self.verticalLayout_2.addWidget(self.textEdit_etrs)
@@ -317,7 +317,7 @@ class Ui_MainWindow(object):
         self.toolButton_st70_help.setObjectName("toolButton_st70_help")
         self.horizontalLayout_3.addWidget(self.toolButton_st70_help)
         self.verticalLayout_3.addWidget(self.frame_st70_label)
-        self.textEdit_st70 = QtWidgets.QTextEdit(self.frame_st70)
+        self.textEdit_st70 = QtWidgets.QPlainTextEdit(self.frame_st70)
         self.textEdit_st70.setEnabled(True)
         font = QtGui.QFont()
         font.setFamily("Courier")
@@ -326,8 +326,8 @@ class Ui_MainWindow(object):
         self.textEdit_st70.setTabChangesFocus(False)
         self.textEdit_st70.setDocumentTitle("")
         self.textEdit_st70.setUndoRedoEnabled(True)
-        self.textEdit_st70.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.textEdit_st70.setAcceptRichText(False)
+        self.textEdit_st70.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        # self.textEdit_st70.setAcceptRichText(False)
         self.textEdit_st70.setPlaceholderText("")
         self.textEdit_st70.setObjectName("textEdit_st70")
         self.verticalLayout_3.addWidget(self.textEdit_st70)
@@ -525,11 +525,6 @@ class Ui_MainWindow(object):
 ""))
         self.toolButton_st70_save.setText(_translate("MainWindow", "..."))
         self.toolButton_st70_help.setText(_translate("MainWindow", "..."))
-        self.textEdit_st70.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Courier\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.pushButton_st70_export_dxf.setToolTip(_translate("MainWindow", "<b><span style=\"color:#0066cc;\">Exportă în format DXF</span></b><br>\n"
 "Salvează punctele în format AutoCAD DXF.<br>\n"
 "<small><i>Ideal pentru utilizare în aplicații CAD 2D/3D.</i></small>\n"
