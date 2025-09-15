@@ -12,6 +12,21 @@ from romgeo_lite import crs
 from romgeo_lite import projections
 from romgeo_lite import transformations
 
+INTERP_COLOCATE = 0
+INTERP_LINEAR   = 1
+INTERP_BICUBIC  = 2
+
+def select_interp(code):
+    if code == INTERP_COLOCATE:
+        return transformations._doColocate
+    elif code == INTERP_LINEAR:
+        raise NotImplementedError(f"LinearInterpolation not implemented.")
+        # return transformations._doLinearInterpolation
+    elif code == INTERP_BICUBIC:
+        return transformations._doBSInterpolation
+    else:
+        raise ValueError(f"Unknown interpolation code: {code}")
+
 
 def _spline_params(xk, yk):
     # Return parameters of bicubic spline surface
@@ -127,6 +142,55 @@ def _doBSInterpolation(x, y, minx, miny, stepx, stepy, grid):
 
     return shift_value
 
+def _doColocate(x, y, minx, miny, stepx, stepy, grid, return_indices=False):
+    """
+    Nearest-neighbor 'colocation' lookup.
+    Mirrors _doBSInterpolation signature: (x, y, minx, miny, stepx, stepy, grid)
+
+    Parameters
+    ----------
+    x, y : float
+        Query coordinates in the same CRS as the grid axes.
+        x grows with columns, y grows with rows.
+    minx, miny : float
+        Minimum axis values corresponding to column 0, row 0.
+    stepx, stepy : float
+        Grid spacing along x (cols) and y (rows).
+    grid : np.ndarray
+        2-D array (rows, cols) or 3-D (bands, rows, cols).
+    return_indices : bool (kw-only)
+        If True, also return the integer (row, col) indices used.
+
+    Returns
+    -------
+    value : float or np.ndarray
+        Value at the nearest cell. If grid is 3-D, returns grid[:, row, col].
+    (row, col) : tuple[int, int], optional
+        Returned only if return_indices=True.
+    """
+    if stepx <= 0 or stepy <= 0:
+        raise ValueError("stepx and stepy must be positive.")
+
+    # Compute nearest integer indices
+    j = int(round((x - minx) / stepx))  # column index
+    i = int(round((y - miny) / stepy))  # row index
+
+    # Clamp to valid range
+    if grid.ndim == 2:
+        nrows, ncols = grid.shape
+    elif grid.ndim == 3:
+        _, nrows, ncols = grid.shape
+    else:
+        raise ValueError("grid must be 2-D or 3-D (bands, rows, cols).")
+
+    i = max(0, min(nrows - 1, i))
+    j = max(0, min(ncols - 1, j))
+
+    # Extract value
+    value = grid[i, j] if grid.ndim == 2 else grid[:, i, j]
+
+    return (value, (i, j)) if return_indices else value
+
 # Numba JIT function to compute 4 parameter Helmert transformation (2D)
 
 def _helmert_2d(east, north, tE, tN, dm, Rz):
@@ -154,44 +218,55 @@ def _helmert_7(x, y, z, cx, cy, cz, scale, rx, ry, rz):
     return x1, y1, z1
 
 
-def _etrs_to_st70(lat, lon, z, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi):
+def _etrs_to_st70(lat, lon, z, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, interpolations=(INTERP_BICUBIC, INTERP_BICUBIC)):
+    
+    interpHoriz    = transformations.select_interp(interpolations[0])
+    interpVertical = transformations.select_interp(interpolations[1])
+
     en = projections._geodetic_to_stereographic(lat, lon, E0, N0, PHI0, LAMBDA0, k0, a, b,)
     h = transformations._helmert_2d(en[0], en[1], tE, tN, dm, Rz)
 
-    e_shift = transformations._doBSInterpolation(h[0], h[1], mine, minn, stepe, stepn, shifts_grid[0])
-    n_shift = transformations._doBSInterpolation(h[0], h[1], mine, minn, stepe, stepn, shifts_grid[1])
-    h_shift = transformations._doBSInterpolation(lon, lat, minla, minphi, stepla, stepphi, heights_grid[0])
+    e_shift =    interpHoriz(h[0], h[1],   mine, minn,      stepe, stepn,      shifts_grid[0])
+    n_shift =    interpHoriz(h[0], h[1],   mine, minn,      stepe, stepn,      shifts_grid[1])
+    h_shift = interpVertical(lon, lat,     minla, minphi,   stepla, stepphi,   heights_grid[0])
 
     return  h[0] + e_shift, h[1] + n_shift, z - h_shift
 
 
-def _etrs_to_st70_en(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi):
+def _etrs_to_st70_en(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, interpolations=(INTERP_BICUBIC, INTERP_BICUBIC)):
+    
+    interpHoriz    = transformations.select_interp(interpolations[0])
+    interpVertical = transformations.select_interp(interpolations[1])
+    
     latlon = projections._stereographic_to_geodetic(e, n, E0, N0, PHI0, LAMBDA0, k0, a, b)
     h = transformations._helmert_2d(e, n, tE, tN, dm, Rz)
 
-    e_shift = transformations._doBSInterpolation(h[0], h[1], mine, minn, stepe, stepn, shifts_grid[0])
-    n_shift = transformations._doBSInterpolation(h[0], h[1], mine, minn, stepe, stepn, shifts_grid[1])
-    h_shift = transformations._doBSInterpolation(latlon[1], latlon[0], minla, minphi, stepla, stepphi, heights_grid[0])
+    e_shift =    interpHoriz(h[0], h[1],             mine,  minn,    stepe,  stepn,     shifts_grid[0])
+    n_shift =    interpHoriz(h[0], h[1],             mine,  minn,    stepe,  stepn,     shifts_grid[1])
+    h_shift = interpVertical(latlon[1], latlon[0],   minla, minphi,  stepla, stepphi,   heights_grid[0])
 
     return latlon[0], latlon[1], height + h_shift, h[1] + n_shift, h[0] + e_shift, e_shift, n_shift
 
 
-def _st70_to_etrs(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi):
-
-    e_shift = transformations._doBSInterpolation(e, n, mine, minn, stepe, stepn, shifts_grid[0])
-    n_shift = transformations._doBSInterpolation(e, n, mine, minn, stepe, stepn, shifts_grid[1])
+def _st70_to_etrs(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, interpolations=(INTERP_BICUBIC, INTERP_BICUBIC)):
+    
+    interpHoriz    = transformations.select_interp(interpolations[0])
+    interpVertical = transformations.select_interp(interpolations[1])
+        
+    e_shift = interpHoriz(e, n, mine, minn, stepe, stepn, shifts_grid[0])
+    n_shift = interpHoriz(e, n, mine, minn, stepe, stepn, shifts_grid[1])
 
     h = transformations._helmert_2d(e - e_shift, n - n_shift, tE, tN, dm, Rz)
 
     latlon = projections._stereographic_to_geodetic(h[0], h[1], E0, N0, PHI0, LAMBDA0, k0, a, b)
 
-    h_shift = transformations._doBSInterpolation(latlon[1], latlon[0], minla, minphi, stepla, stepphi, heights_grid[0])
+    h_shift = interpVertical(latlon[1], latlon[0], minla, minphi, stepla, stepphi, heights_grid[0])
 
     return  latlon[0], latlon[1], height + h_shift
 
 
-def _st70_to_utm(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, zone):
-    lat, lon, height = transformations._st70_to_etrs(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi)
+def _st70_to_utm(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, zone, interpolations=(INTERP_BICUBIC, INTERP_BICUBIC)):
+    lat, lon, height = transformations._st70_to_etrs(e, n, height, E0, N0, PHI0, LAMBDA0, k0, a, b, tE, tN, dm, Rz, shifts_grid, mine, minn, stepe, stepn, heights_grid, minla, minphi, stepla, stepphi, interpolations=interpolations)
 
     utm = projections._tm_latlon2en(lat, lon, 500000.0, 0.0, 0.0, math.radians(zone * 6.0 - 183.0), 0.9996, a, b)
 
@@ -241,6 +316,11 @@ class Transform:
         self.crs = crs.crs(self.dest_epsg, self.source_epsg)
         self.projection = self.crs.projection
 
+        self.interpolate_horizontal_method = grid_data.get("params", {}).get("interpolation", {}).get("horizontal", INTERP_BICUBIC)
+        self.interpolate_vertical_method   = grid_data.get("params", {}).get("interpolation", {}).get("vertical",   INTERP_BICUBIC)
+
+        self.interpolate_methods = (self.interpolate_horizontal_method, self.interpolate_vertical_method)
+
         self.set_ellipsoid_param()
 
     def load_grids(self, grid_data):
@@ -269,12 +349,14 @@ class Transform:
     def helmert_2d(self, east, north, transform='etrs2stereo'):
         return _helmert_2d(east, north, **self.helmert[transform])
 
+
+
     @staticmethod
     def _bulk_etrs_to_st70(lat, lon, z, e, n, height,
                         E0, N0, PHI0, LAMBDA0, k0, a, b,
                         tE, tN, dm, Rz,
                         shifts_grid, mine, minn, stepe, stepn,
-                        heights_grid, minla, minphi, stepla, stepphi):
+                        heights_grid, minla, minphi, stepla, stepphi, interpolations):
 
         lat = np.asarray(lat, dtype=np.float64)
         lon = np.asarray(lon, dtype=np.float64)
@@ -291,7 +373,8 @@ class Transform:
                 E0, N0, PHI0, LAMBDA0, k0, a, b,
                 tE, tN, dm, Rz,
                 shifts_grid, mine, minn, stepe, stepn,
-                heights_grid, minla, minphi, stepla, stepphi
+                heights_grid, minla, minphi, stepla, stepphi,
+                interpolations
             )
 
     @staticmethod
@@ -299,7 +382,7 @@ class Transform:
                         E0, N0, PHI0, LAMBDA0, k0, a, b,
                         tE, tN, dm, Rz,
                         shifts_grid, mine, minn, stepe, stepn,
-                        heights_grid, minla, minphi, stepla, stepphi):
+                        heights_grid, minla, minphi, stepla, stepphi, interpolations):
 
         e = np.asarray(e, dtype=np.float64)
         n = np.asarray(n, dtype=np.float64)
@@ -316,7 +399,8 @@ class Transform:
                 E0, N0, PHI0, LAMBDA0, k0, a, b,
                 tE, tN, dm, Rz,
                 shifts_grid, mine, minn, stepe, stepn,
-                heights_grid, minla, minphi, stepla, stepphi
+                heights_grid, minla, minphi, stepla, stepphi,
+                interpolations
             )
 
     @staticmethod
@@ -325,7 +409,8 @@ class Transform:
                         tE, tN, dm, Rz,
                         shifts_grid, mine, minn, stepe, stepn,
                         heights_grid, minla, minphi, stepla, stepphi,
-                        zone):
+                        zone,
+                        interpolations):
 
         e = np.asarray(e, dtype=np.float64)
         n = np.asarray(n, dtype=np.float64)
@@ -343,8 +428,11 @@ class Transform:
                 tE, tN, dm, Rz,
                 shifts_grid, mine, minn, stepe, stepn,
                 heights_grid, minla, minphi, stepla, stepphi,
-                zone
+                zone,
+                interpolations
             )
+
+
 
 
     def etrs_to_st70(self, lat, lon, z, e, n, height):
@@ -371,7 +459,8 @@ class Transform:
             np.float64(self.geoid_heights['metadata']['minla']),
             np.float64(self.geoid_heights['metadata']['minphi']),
             np.float64(self.geoid_heights['metadata']['stepla']),
-            np.float64(self.geoid_heights['metadata']['stepphi'])
+            np.float64(self.geoid_heights['metadata']['stepphi']),
+            self.interpolate_methods
         )
 
     def st70_to_etrs(self, e, n, height, lat, lon, z):
@@ -398,7 +487,8 @@ class Transform:
             np.float64(self.geoid_heights['metadata']['minla']),
             np.float64(self.geoid_heights['metadata']['minphi']),
             np.float64(self.geoid_heights['metadata']['stepla']),
-            np.float64(self.geoid_heights['metadata']['stepphi'])
+            np.float64(self.geoid_heights['metadata']['stepphi']),
+            self.interpolate_methods
         )
 
     def st70_to_utm(self, e, n, height, utm_e, utm_n, z, zone):
@@ -426,7 +516,8 @@ class Transform:
             np.float64(self.geoid_heights['metadata']['minphi']),
             np.float64(self.geoid_heights['metadata']['stepla']),
             np.float64(self.geoid_heights['metadata']['stepphi']),
-            int(zone)
+            int(zone),
+            self.interpolate_methods
         )
 
 

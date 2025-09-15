@@ -1,7 +1,7 @@
 VSVersionInfo(
     ffi=FixedFileInfo(
-        filevers=(1, 0, 1, 46),
-        prodvers=(1, 0, 1, 46),
+        filevers=(1, 0, 2, 47),
+        prodvers=(1, 0, 2, 47),
         mask=0x3f,
         flags=0x0,
         OS=0x40004,
@@ -17,12 +17,12 @@ VSVersionInfo(
                     [
                         StringStruct(u'CompanyName', u'Centrul National de Cartografie'),
                         StringStruct(u'FileDescription', u'ROMGEO Table Convert ETRS89 - Stereo70'),
-                        StringStruct(u'FileVersion', u'1.0.1.46'),
+                        StringStruct(u'FileVersion', u'1.0.2.47'),
                         StringStruct(u'InternalName', u'romgeo-table-convert-gui'),
                         StringStruct(u'LegalCopyright', u'Copyright 2025 CNC'),
                         StringStruct(u'OriginalFilename', u'romgeo-table-convert-gui.exe'),
                         StringStruct(u'ProductName', u'ROMGEO Table Convert'),
-                        StringStruct(u'ProductVersion', u'1.0.1.46')
+                        StringStruct(u'ProductVersion', u'1.0.2.47')
                     ]
                 )
             ]
